@@ -29,6 +29,7 @@ from idlelib import search
 from idlelib.tree import wheel_event
 from idlelib.util import py_extensions
 from idlelib import window
+import kosmostar
 
 # The default tab setting for a Text widget, in average-width characters.
 TK_TABWIDTH_DEFAULT = 8
@@ -335,8 +336,11 @@ class EditorWindow:
         text.bind("<<flash-paren>>", parenmatch.flash_paren_event)
         text.bind("<<paren-closed>>", parenmatch.paren_closed_event)
         scriptbinding = ScriptBinding(self)
+        self.scriptbinder_kosmostar = scriptbinding
         text.bind("<<check-module>>", scriptbinding.check_module_event)
         text.bind("<<run-module>>", scriptbinding.run_module_event)
+        text.bind("<<kosmostar-upload>>", self.upload_kosmostar)
+        text.bind("<<kosmostar-download>>", self.download_kosmostar)
         text.bind("<<run-custom>>", scriptbinding.run_custom_event)
         text.bind("<<do-rstrip>>", self.Rstrip(self).do_rstrip)
         self.ctip = ctip = self.Calltip(self)
@@ -360,6 +364,22 @@ class EditorWindow:
         else:
             self.update_menu_state('options', '*ine*umbers', 'disabled')
 
+    def upload_kosmostar(self,e):
+        if self.scriptbinder_kosmostar.kosmostar_is_output_window():
+            return None
+        existing_text = self.text.get('1.0', END)
+        kosmostar.upload(existing_text)
+    def download_kosmostar(self,e):
+        if self.scriptbinder_kosmostar.kosmostar_is_output_window():
+            return None
+        existing_text = self.text.get('1.0', END)
+        new_text = kosmostar.download()
+        if new_text == None:
+            kosmostar.show_error('Error: Unknown\nFile does not exist')
+            return None
+        new_combined_text = kosmostar.comment_code(existing_text) + '\n' + '#'*10 + '\n' + new_text
+        self.text.delete('1.0', END)
+        self.text.insert(INSERT, new_combined_text)
     def handle_winconfig(self, event=None):
         self.set_width()
 

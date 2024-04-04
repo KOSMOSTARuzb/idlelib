@@ -208,6 +208,8 @@ class ScriptBinding:
         self.perf = time.perf_counter()
 
 
+    def kosmostar_is_output_window(self):
+        return isinstance(self.editwin, outwin.OutputWindow)
 if __name__ == "__main__":
     from unittest import main
     main('idlelib.idle_test.test_runscript', verbosity=2,)

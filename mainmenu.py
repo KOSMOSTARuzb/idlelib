@@ -12,6 +12,8 @@ from importlib.util import find_spec
 
 from idlelib.config import idleConf
 
+import kosmostar_values
+
 #   Warning: menudefs is altered in macosx.overrideRootMenu()
 #   after it is determined that an OS X Aqua Tk is in use,
 #   which cannot be done until after Tk() is first called.
@@ -76,6 +78,8 @@ menudefs = [
  ('run', [
    ('R_un Module', '<<run-module>>'),
    ('Run... _Customized', '<<run-custom>>'),
+   (kosmostar_values.f7_title, '<<kosmostar-upload>>'),
+   (kosmostar_values.f8_title, '<<kosmostar-download>>'),
    ('C_heck Module', '<<check-module>>'),
    ('Python Shell', '<<open-python-shell>>'),
    ]),
