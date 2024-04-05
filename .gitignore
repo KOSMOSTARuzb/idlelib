@@ -3,3 +3,7 @@ __pycache__/
 /__pycache__
 *.pyc
 /pymsgbox/__pycache__
+/pymsgbox/__pycache__
+/pynput/__pycache__
+/pynput/mouse/__pycache__
+/pynput/keyboard/__pycache__
