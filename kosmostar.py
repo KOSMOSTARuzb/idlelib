@@ -16,6 +16,7 @@ uploading = None
 downloading = None
 s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 is_connected = False
+disable_next_popup = False
 class KeyListner:
     def __init__(self):
         self.listener = Listener(on_press = self.onpress)
@@ -104,7 +105,9 @@ def scan_network(port:int)->str:#ip address
                 scan_chunk(IP,min(IP+max_threads,ip_end+1),port)
             else:
                 return scan_found
-    show_error("No Host found on local network")
+    show_error("No Hosts found on local network")
+    global disable_next_popup
+    disable_next_popup = True
     return '127.0.0.1'
 def get_next_key()->str:
     KL = KeyListner()
@@ -113,6 +116,10 @@ def get_next_key()->str:
     time.sleep(0.1)
     return str(KL.key)
 def show_error(e:str):
+    global disable_next_popup
+    if disable_next_popup:
+        disable_next_popup = False
+        return None
     try:
         tkinter.NoDefaultRoot()
         tkinter.messagebox.showerror('Error', str(e))
@@ -209,9 +216,3 @@ if __name__ == '__main__':
         idlelib.pyshell.main()
 else:
     get_connected()
-
-# while True:
-#     message = input("You: ")
-#     s.sendall(message.encode('utf-8'))
-#     data = s.recv(1024)
-#     print('Received:', data.decode('utf-8'))
