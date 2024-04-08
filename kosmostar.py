@@ -4,12 +4,14 @@ from pynput.keyboard import Key, Listener
 import socket
 import threading
 import pymsgbox
-import sys
 import time
 import idlelib.kosmostar_values
+import netifaces
 
-HOST = idlelib.kosmostar_values.host
+HOST = None
 PORT = idlelib.kosmostar_values.port
+scan_found = None
+max_threads = 50
 uploading = None
 downloading = None
 s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -21,9 +23,89 @@ class KeyListner:
         self.got = False
         self.listener.start()
     def onpress(self,key):
-        self.key = key
-        self.listener.stop()
-        self.got = True
+        if self.key==None:
+            self.key = str(key)
+        else:
+            self.key += str(key)
+            self.listener.stop()
+            self.got = True
+def get_ip()->list[tuple[str,str,str]]:#interface, ip, subnet mask
+    j = []
+    interfaces = netifaces.interfaces()
+
+    # Iterate through interfaces
+    for interface in interfaces:
+        # Check if the interface has IPv4 addresses
+        if netifaces.AF_INET in netifaces.ifaddresses(interface):
+            ipv4_addresses = netifaces.ifaddresses(interface)[netifaces.AF_INET]
+
+            for address_info in ipv4_addresses:
+                if address_info['addr']!='127.0.0.1' and not ':' in address_info['addr']:
+                    j.append((interface,address_info['addr'],address_info['netmask']))
+    return j
+def get_ip_range()->list[tuple[int,int]]:# ip start, ip finish
+    ips = get_ip()
+    j=[]
+    for i in ips:
+        ip_parts=i[1].split('.')
+        mask_parts=i[2].split('.')
+        j1s = 0
+        j2s = 0
+        for l in range(4):
+            j1 = int(ip_parts[l]) & int(mask_parts[l])
+            jt = int(mask_parts[l]) ^ 255
+            j2 = jt | int(ip_parts[l])
+            j1s =j1s*256 + j1
+            j2s =j2s*256 + j2
+        j.append((j1s,j2s))
+    return j
+def to_ip(IP:int)->str:
+    ip = str(IP//16777216)
+    ip += '.' + str(IP%16777216//65536)
+    ip += '.' + str(IP%65536//256)
+    ip += '.' + str(IP%256)
+    return ip
+def scan_ip(IP:int,port:int)->bool:
+    global scan_found
+    ip = to_ip(IP)
+    soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    socket.setdefaulttimeout(0.5)
+    result = soc.connect_ex((ip,port))
+    if result == 0:
+        print('Open port found:',ip,':',port)
+        scan_found = ip
+        soc.close()
+
+    soc.close()
+def scan_chunk(start,stop,port):
+    global scan_found
+    print('from',to_ip(start),to_ip(stop))
+    threads = []
+    for i in range(start, stop+1):
+        if scan_found == None:
+            threading.Thread()
+            threads.append(threading.Thread(target=lambda: scan_ip(i,port)))
+            threads[-1].start()
+    alive = True
+    while alive:
+        alive = False
+        for i in threads:
+            if i.is_alive():
+                alive = True
+def scan_network(port:int)->str:#ip address
+    global scan_found
+    scan_found = None
+    ips = get_ip_range()
+    print('scanning')
+
+    for ip_start, ip_end in ips:
+        for IP in range(ip_start, ip_end+1,max_threads):
+            if scan_found==None:
+                scan_chunk(IP,min(IP+max_threads,ip_end+1),port)
+            else:
+                return scan_found
+    show_error("No Host found on local network")
+    return '127.0.0.1'
 def get_next_key()->str:
     KL = KeyListner()
     while not KL.got:
@@ -43,8 +125,10 @@ def show_error(e:str):
             except:
                 pass
 def get_connected():
-    global is_connected
+    global is_connected, HOST
     try:
+        if HOST == None:
+            HOST = scan_network(PORT)
         s.connect((HOST, PORT))
         is_connected=True
         return True
