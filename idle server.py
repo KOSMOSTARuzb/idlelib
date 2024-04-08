@@ -3,10 +3,22 @@ import re
 import threading
 import os
 import idlelib.kosmostar_values
+import netifaces
 
-HOST = idlelib.kosmostar_values.host
 PORT = idlelib.kosmostar_values.port
 storage_path = './downloads'
+def get_ip()->str:# ip
+    interfaces = netifaces.interfaces()
+
+    # Iterate through interfaces
+    for interface in interfaces:
+        # Check if the interface has IPv4 addresses
+        if netifaces.AF_INET in netifaces.ifaddresses(interface):
+            ipv4_addresses = netifaces.ifaddresses(interface)[netifaces.AF_INET]
+
+            for address_info in ipv4_addresses:
+                if address_info['addr']!='127.0.0.1' and not ':' in address_info['addr']:
+                    return interface,address_info['addr']
 if not os.path.exists(storage_path):
     os.mkdir(storage_path)
 class Connection:
@@ -77,6 +89,7 @@ class Connection:
         return filename
 
 connections = []
+HOST = get_ip()
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((HOST, PORT))
 s.listen()
