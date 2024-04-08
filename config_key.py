@@ -1,6 +1,3 @@
-"""
-Dialog for building Tkinter accelerator key bindings
-"""
 from tkinter import Toplevel, Listbox, StringVar, TclError
 from tkinter.ttk import Frame, Button, Checkbutton, Entry, Label, Scrollbar
 from tkinter import messagebox
