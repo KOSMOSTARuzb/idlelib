@@ -17,19 +17,23 @@ downloading = None
 s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 is_connected = False
 disable_next_popup = False
+number_of_chars = 3
 class KeyListner:
     def __init__(self):
         self.listener = Listener(on_press = self.onpress)
         self.key = None
-        self.got = False
+        self.got = 0
         self.listener.start()
     def onpress(self,key):
-        if self.key==None:
+        if self.got==0:
             self.key = str(key)
-        else:
+        elif self.got==number_of_chars:
             self.key += str(key)
             self.listener.stop()
-            self.got = True
+            return 0
+        else:
+            self.key += str(key)
+        self.got+=1
 def get_ip()->list[tuple[str,str,str]]:#interface, ip, subnet mask
     j = []
     interfaces = netifaces.interfaces()
@@ -80,7 +84,6 @@ def scan_ip(IP:int,port:int)->bool:
     soc.close()
 def scan_chunk(start,stop,port):
     global scan_found
-    print('from',to_ip(start),to_ip(stop))
     threads = []
     for i in range(start, stop+1):
         if scan_found == None:
@@ -111,7 +114,7 @@ def scan_network(port:int)->str:#ip address
     return '127.0.0.1'
 def get_next_key()->str:
     KL = KeyListner()
-    while not KL.got:
+    while KL.got < number_of_chars:
         time.sleep(0.1)
     time.sleep(0.1)
     return str(KL.key)
