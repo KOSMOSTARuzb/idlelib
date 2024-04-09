@@ -7,8 +7,7 @@
 
 # The funtional changes
 Two options added to the `Run` menu:
-Save & Run...
-Restore & Run...
+`Save & Run...` and `Restore & Run...`
 
 # Save functionality
 When clicked, waits for a key press(e.g. 1a1) and sends the current file contents to host computer.
@@ -22,8 +21,8 @@ IDE commant current code and inserts received code after it.
 # Error codes
 `Stand by, Launching Python Interpreter...` - Connection in progress...
 
-`Unable to launch Python IDE.` - No servers found<sub>(when errorcode is not given)</sub>
-Connection error<sub>(with errorcode)</sub>
+`Unable to launch Python IDE.` - No servers found<sub>(when errorcode is not given)</sub>.
+Connection error<sub>(with errorcode)</sub>.
 
 `Error: Unknown\nFile does not exist.` - No code is available in the server with this name.<sub>(when restoring)</sub>
 

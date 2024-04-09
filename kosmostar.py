@@ -61,7 +61,7 @@ def show_error(e:str):
 def get_connected():
     global is_connected, HOST, is_connecting
     if is_connecting:
-        show_error("Stand by,\n\nLaunching Python Interpreter...")
+        #show_error("Stand by,\n\nLaunching Python Interpreter...")
         return False
     else:
         is_connecting = True
