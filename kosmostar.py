@@ -1,21 +1,20 @@
-
 import tkinter, tkinter.messagebox
 from pynput.keyboard import Key, Listener
 import socket
 import threading
 import pymsgbox
 import time
-import idlelib.kosmostar_values
-import netifaces
+import kosmostar_values
+import networkin
 
 HOST = None
-PORT = idlelib.kosmostar_values.port
+PORT = kosmostar_values.port
 scan_found = None
-max_threads = 50
 uploading = None
 downloading = None
 s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 is_connected = False
+is_connecting = False
 disable_next_popup = False
 number_of_chars = 3
 class KeyListner:
@@ -34,90 +33,14 @@ class KeyListner:
         else:
             self.key += str(key)
         self.got+=1
-def get_ip()->list[tuple[str,str,str]]:#interface, ip, subnet mask
-    j = []
-    interfaces = netifaces.interfaces()
 
-    # Iterate through interfaces
-    for interface in interfaces:
-        # Check if the interface has IPv4 addresses
-        if netifaces.AF_INET in netifaces.ifaddresses(interface):
-            ipv4_addresses = netifaces.ifaddresses(interface)[netifaces.AF_INET]
-
-            for address_info in ipv4_addresses:
-                if address_info['addr']!='127.0.0.1' and not ':' in address_info['addr']:
-                    j.append((interface,address_info['addr'],address_info['netmask']))
-    return j
-def get_ip_range()->list[tuple[int,int]]:# ip start, ip finish
-    ips = get_ip()
-    j=[]
-    for i in ips:
-        ip_parts=i[1].split('.')
-        mask_parts=i[2].split('.')
-        j1s = 0
-        j2s = 0
-        for l in range(4):
-            j1 = int(ip_parts[l]) & int(mask_parts[l])
-            jt = int(mask_parts[l]) ^ 255
-            j2 = jt | int(ip_parts[l])
-            j1s =j1s*256 + j1
-            j2s =j2s*256 + j2
-        j.append((j1s,j2s))
-    return j
-def to_ip(IP:int)->str:
-    ip = str(IP//16777216)
-    ip += '.' + str(IP%16777216//65536)
-    ip += '.' + str(IP%65536//256)
-    ip += '.' + str(IP%256)
-    return ip
-def scan_ip(IP:int,port:int)->bool:
-    global scan_found
-    ip = to_ip(IP)
-    soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    socket.setdefaulttimeout(0.5)
-    result = soc.connect_ex((ip,port))
-    if result == 0:
-        print('Open port found:',ip,':',port)
-        scan_found = ip
-        soc.close()
-
-    soc.close()
-def scan_chunk(start,stop,port):
-    global scan_found
-    threads = []
-    for i in range(start, stop+1):
-        if scan_found == None:
-            threading.Thread()
-            threads.append(threading.Thread(target=lambda: scan_ip(i,port)))
-            threads[-1].start()
-    alive = True
-    while alive:
-        alive = False
-        for i in threads:
-            if i.is_alive():
-                alive = True
-def scan_network(port:int)->str:#ip address
-    global scan_found
-    scan_found = None
-    ips = get_ip_range()
-    print('scanning')
-
-    for ip_start, ip_end in ips:
-        for IP in range(ip_start, ip_end+1,max_threads):
-            if scan_found==None:
-                scan_chunk(IP,min(IP+max_threads,ip_end+1),port)
-            else:
-                return scan_found
-    show_error("No Hosts found on local network")
-    global disable_next_popup
-    disable_next_popup = True
-    return '127.0.0.1'
 def get_next_key()->str:
     KL = KeyListner()
     while KL.got < number_of_chars:
         time.sleep(0.1)
     time.sleep(0.1)
     return str(KL.key)
+
 def show_error(e:str):
     global disable_next_popup
     if disable_next_popup:
@@ -134,24 +57,34 @@ def show_error(e:str):
                 print(e)
             except:
                 pass
+
 def get_connected():
-    global is_connected, HOST
+    global is_connected, HOST, is_connecting
+    if is_connecting:
+        show_error("Stand by,\n\nLaunching Python Interpreter...")
+        return False
+    else:
+        is_connecting = True
     try:
         if HOST == None:
-            HOST = scan_network(PORT)
+            HOST = networkin.scan_network(PORT)
         s.connect((HOST, PORT))
         is_connected=True
+        is_connecting=False
         return True
+    except ConnectionRefusedError:
+        show_error("Unable to launch Python IDE.")
     except Exception as e:
-        show_error(str(e))
-        return False
+        show_error("Unable to launch Python IDE.\n\n"+str(e))
+    is_connecting = False
+    return False
 def uploader(slot:str, content):
     global uploading
     if slot == 'f7':
         return None
     if not is_connected:
         if not get_connected():
-            show_error('Not connected, try restarting the app...')
+            show_error('Not launched, try restarting the app...')
         return False
     content = 'send:' + slot + '\n' + content
     s.sendall(content.encode('utf-8'))
@@ -179,14 +112,14 @@ def downloader(slot:str):
         return None
     if not is_connected:
         if not get_connected():
-            show_error('Not connected, try restarting the app...')
+            show_error('Not launched, try restarting the app...')
         return None
     content = 'recv:' + slot
     s.sendall(content.encode('utf-8'))
     print('requested, waiting...')
-    content = s.recv(idlelib.kosmostar_values.max_bytes_to_transfer).decode('utf-8')
+    content = s.recv(kosmostar_values.max_bytes_to_transfer).decode('utf-8')
     print('received')
-    if content == idlelib.kosmostar_values.null:
+    if content == kosmostar_values.null:
         print('Nothing')
         return None
     return content
@@ -196,15 +129,17 @@ def download()->str|None:
     slot = get_next_key()
     return downloader(slot)
 def comment_code(org:str)->str:
-    lines = org.splitlines()
+    lines = org.strip().splitlines()
     new = ""
     for i in lines:
-        new = new + '\n# ' + i
+        if i.strip():
+            new = new + '\n# ' + i
     return new
 if __name__ == '__main__':
     try:
         import idlelib.pyshell
     except ImportError:
+        print(3)
         from . import pyshell
         import os
         idledir = os.path.dirname(os.path.abspath(pyshell.__file__))
@@ -217,5 +152,3 @@ if __name__ == '__main__':
         pyshell.main()
     else:
         idlelib.pyshell.main()
-else:
-    get_connected()

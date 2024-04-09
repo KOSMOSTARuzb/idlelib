@@ -3,22 +3,10 @@ import re
 import threading
 import os
 import idlelib.kosmostar_values
-import netifaces
+import idlelib.networkin
 
 PORT = idlelib.kosmostar_values.port
 storage_path = './downloads'
-def get_ip()->str:# ip
-    interfaces = netifaces.interfaces()
-
-    # Iterate through interfaces
-    for interface in interfaces:
-        # Check if the interface has IPv4 addresses
-        if netifaces.AF_INET in netifaces.ifaddresses(interface):
-            ipv4_addresses = netifaces.ifaddresses(interface)[netifaces.AF_INET]
-
-            for address_info in ipv4_addresses:
-                if address_info['addr']!='127.0.0.1' and not ':' in address_info['addr']:
-                    return interface,address_info['addr']
 if not os.path.exists(storage_path):
     os.mkdir(storage_path)
 class Connection:
@@ -88,16 +76,36 @@ class Connection:
 
         return filename
 
-connections = []
-HOST = get_ip()
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind((HOST, PORT))
-s.listen()
-print("Waiting for clients...")
-while True:
-    conn, addr = s.accept()
-    connection = Connection(conn,addr)
-    thread = threading.Thread(target=connection.run)
-    connections.append(thread)
-    thread.start()
-s.close()
+class Server:
+    def __init__(self, HOST:str,PORT:int):
+        self.ip = HOST
+        self.port = PORT
+        self.thread = threading.Thread(target=self.__run__)
+        
+        self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.connections = []
+        print('IP:',self.ip)
+        
+        self.soc.bind((self.ip, self.port))
+        self.soc.listen()
+    def start(self):
+        self.thread.start()
+    def __run__(self):
+        print(f"Waiting for clients({self.ip})...")
+        try:
+            while True:
+                conn, addr = self.soc.accept()
+                connection = Connection(conn,addr)
+                thread = threading.Thread(target=connection.run)
+                self.connections.append(thread)
+                thread.start()
+        except Exception as e:
+            print(f"ERROR({self.ip}):",e)
+            self.soc.close()
+servers = []
+HOSTs,SUBNETs = zip(*idlelib.networkin.get_ip_and_subnet())
+
+for host in HOSTs:
+    server = Server(host,PORT)
+    servers.append(server)
+    server.start()

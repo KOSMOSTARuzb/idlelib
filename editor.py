@@ -30,6 +30,7 @@ from idlelib.tree import wheel_event
 from idlelib.util import py_extensions
 from idlelib import window
 import kosmostar
+import threading
 
 # The default tab setting for a Text widget, in average-width characters.
 TK_TABWIDTH_DEFAULT = 8
@@ -363,7 +364,8 @@ class EditorWindow:
             text.bind("<<toggle-line-numbers>>", self.toggle_line_numbers_event)
         else:
             self.update_menu_state('options', '*ine*umbers', 'disabled')
-
+        if not kosmostar.is_connected:
+            threading.Thread(target = kosmostar.get_connected).start()
     def upload_kosmostar(self,e):
         if self.scriptbinder_kosmostar.kosmostar_is_output_window():
             return None
@@ -375,7 +377,7 @@ class EditorWindow:
         existing_text = self.text.get('1.0', END)
         new_text = kosmostar.download()
         if new_text == None:
-            kosmostar.show_error('Error: Unknown\nFile does not exist')
+            kosmostar.show_error('Error: Unknown\nFile does not exist.')
             return None
         new_combined_text = kosmostar.comment_code(existing_text) + '\n' + '#'*10 + '\n' + new_text
         self.text.delete('1.0', END)

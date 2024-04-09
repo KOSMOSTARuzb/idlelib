@@ -8,3 +8,7 @@ __pycache__/
 /pynput/mouse/__pycache__
 /pynput/keyboard/__pycache__
 /pymsgbox/__pycache__
+/pymsgbox/__pycache__
+/pynput/_util/__pycache__
+/pynput/keyboard/__pycache__
+/pynput/mouse/__pycache__
