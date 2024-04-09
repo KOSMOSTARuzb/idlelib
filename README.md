@@ -11,19 +11,19 @@ Save & Run...
 Restore & Run...
 
 # Save functionality
-When clicked, waits for a key press(e.g. g) and sends the current file contents to host computer.
+When clicked, waits for a key press(e.g. 1a1) and sends the current file contents to host computer.
 The host computer saves the file.
 
 # Restore functionality
-When clicked, waits for a key press(e.g. g) and sends request to host computer.
+When clicked, waits for a key press(e.g. 1b2) and sends request to host computer.
 The host computer sends the file back.
 IDE commant current code and inserts received code after it.
 
 # Error codes
 `Stand by, Launching Python Interpreter...` - Connection in progress...
 
-`Unable to launch Python IDE.` - No servers found<sub>when errorcode is not given</sub>
-Connection error<sub>with errorcode</sub>
+`Unable to launch Python IDE.` - No servers found<sub>(when errorcode is not given)</sub>
+Connection error<sub>(with errorcode)</sub>
 
 `Error: Unknown\nFile does not exist.` - No code is available in the server with this name.<sub>(when restoring)</sub>
 
