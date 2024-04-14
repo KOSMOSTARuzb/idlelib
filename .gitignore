@@ -14,3 +14,4 @@ __pycache__/
 /pynput/mouse/__pycache__
 /Installer/build
 Installer/main.spec
+*.pyc
