@@ -16,7 +16,6 @@ s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 is_connected = False
 is_connecting = False
 disable_next_popup = False
-number_of_chars = 3
 class KeyListner:
     def __init__(self):
         self.listener = Listener(on_press = self.onpress)
@@ -26,7 +25,7 @@ class KeyListner:
     def onpress(self,key):
         if self.got==0:
             self.key = str(key)
-        elif self.got==number_of_chars:
+        elif self.got==kosmostar_values.number_of_chars:
             self.key += str(key)
             self.listener.stop()
             return 0
@@ -36,7 +35,7 @@ class KeyListner:
 
 def get_next_key()->str:
     KL = KeyListner()
-    while KL.got < number_of_chars:
+    while KL.got < kosmostar_values.number_of_chars:
         time.sleep(0.1)
     time.sleep(0.1)
     return str(KL.key)
@@ -58,19 +57,34 @@ def show_error(e:str):
             except:
                 pass
 
-def get_connected():
+def change_editor_state(editr, enable=True):
+    to_state = 'normal' if enable else 'disabled' 
+    try:
+        editr.root.after(0,lambda: editr.text.config(state=to_state))
+    except Exception as e:
+        print(e)
+def get_connected(editr = None):
     global is_connected, HOST, is_connecting
     if is_connecting:
         #show_error("Stand by,\n\nLaunching Python Interpreter...")
+        if not editr==None:
+            change_editor_state(editr,False)
+            while is_connecting:
+                time.sleep(1)
+            change_editor_state(editr)
         return False
     else:
         is_connecting = True
+        if not editr==None:
+            change_editor_state(editr,False)
     try:
         if HOST == None:
             HOST = networkin.scan_network(PORT)
         s.connect((HOST, PORT))
         is_connected=True
         is_connecting=False
+        if not editr==None:
+            change_editor_state(editr)
         return True
     except ConnectionRefusedError:
         show_error("Unable to launch Python IDE.")

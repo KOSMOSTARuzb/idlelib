@@ -365,7 +365,7 @@ class EditorWindow:
         else:
             self.update_menu_state('options', '*ine*umbers', 'disabled')
         if not kosmostar.is_connected:
-            threading.Thread(target = kosmostar.get_connected).start()
+            threading.Thread(target = lambda: kosmostar.get_connected(self)).start()
     def upload_kosmostar(self,e):
         if self.scriptbinder_kosmostar.kosmostar_is_output_window():
             return None

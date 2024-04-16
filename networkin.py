@@ -2,7 +2,8 @@ import subprocess
 import socket
 import threading
 
-max_threads = 50
+import kosmostar_values
+
 def eliminate(text)->str:
     j = ''
     for i in range(len(text)):
@@ -48,7 +49,7 @@ def get_ip_range()->list[tuple[int,int]]:# ip start, ip finish
             j2 = jt | int(ip_parts[l])
             j1s =j1s*256 + j1
             j2s =j2s*256 + j2
-        j.append((j1s,j2s))
+        j.append((j1s+1,j2s-1))
     return j
 
 def to_ip(IP:int)->str:
@@ -62,7 +63,7 @@ def scan_ip(IP:int,port:int)->bool:
     global scan_found
     ip = to_ip(IP)
     soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    socket.setdefaulttimeout(0.5)
+    socket.setdefaulttimeout(kosmostar_values.connection_timeout)
     result = soc.connect_ex((ip,port))
     if result == 0:
         print('Open port found:',ip,':',port)
@@ -74,6 +75,7 @@ def scan_ip(IP:int,port:int)->bool:
 def scan_chunk(start,stop,port):
     global scan_found
     threads = []
+    print("Scanning range",to_ip(start)+'-'+to_ip(stop)+'...')
     for i in range(start, stop+1):
         if scan_found == None:
             threading.Thread()
@@ -93,9 +95,9 @@ def scan_network(port:int)->str:#ip address
     print('scanning')
 
     for ip_start, ip_end in ips:
-        for IP in range(ip_start, ip_end+1,max_threads):
+        for IP in range(ip_start, ip_end+1,kosmostar_values.max_threads):
             if scan_found==None:
-                scan_chunk(IP,min(IP+max_threads,ip_end+1),port)
+                scan_chunk(IP,min(IP+kosmostar_values.max_threads,ip_end+1),port)
             else:
                 return scan_found
     print('Not found setting to default(127.0.0.1)')
