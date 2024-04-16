@@ -63,6 +63,7 @@ def change_editor_state(editr, enable=True):
         editr.root.after(0,lambda: editr.text.config(state=to_state))
     except Exception as e:
         print(e)
+
 def get_connected(editr = None):
     global is_connected, HOST, is_connecting
     if is_connecting:
@@ -92,6 +93,7 @@ def get_connected(editr = None):
         show_error("Unable to launch Python IDE.\n\n"+str(e))
     is_connecting = False
     return False
+
 def uploader(slot:str, content):
     global uploading
     if slot == 'f7':
@@ -105,6 +107,7 @@ def uploader(slot:str, content):
     print('done')
     uploading = None
     return True
+
 def upload(_:str):
     print("upload command")
     global uploading
@@ -121,6 +124,7 @@ def upload(_:str):
             
     else:
         show_error('Work in progress...\nPlease wait before trying again.')
+
 def downloader(slot:str):
     if slot == 'f8':
         return None
@@ -137,11 +141,13 @@ def downloader(slot:str):
         print('Nothing')
         return None
     return content
+
 def download()->str|None:
     print("download command")
     global downloading
     slot = get_next_key()
     return downloader(slot)
+
 def comment_code(org:str)->str:
     lines = org.strip().splitlines()
     new = ""
@@ -149,6 +155,7 @@ def comment_code(org:str)->str:
         if i.strip():
             new = new + '\n# ' + i
     return new
+
 if __name__ == '__main__':
     try:
         import idlelib.pyshell
