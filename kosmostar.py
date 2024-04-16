@@ -16,6 +16,7 @@ s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 is_connected = False
 is_connecting = False
 disable_next_popup = False
+number_of_chars = 3
 class KeyListner:
     def __init__(self):
         self.listener = Listener(on_press = self.onpress)
@@ -25,7 +26,7 @@ class KeyListner:
     def onpress(self,key):
         if self.got==0:
             self.key = str(key)
-        elif self.got==kosmostar_values.number_of_chars:
+        elif self.got==number_of_chars:
             self.key += str(key)
             self.listener.stop()
             return 0
@@ -35,7 +36,7 @@ class KeyListner:
 
 def get_next_key()->str:
     KL = KeyListner()
-    while KL.got < kosmostar_values.number_of_chars:
+    while KL.got < number_of_chars:
         time.sleep(0.1)
     time.sleep(0.1)
     return str(KL.key)
