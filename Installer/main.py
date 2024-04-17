@@ -55,16 +55,20 @@ if __name__ == "__main__":
     if subkeys:
         subkeys.sort(reverse=True)
         print("Found",subkeys)
-        
-        key_path+='\\' + subkeys[0]
-        key_path+='\\Idle'
-        print("Getting value of",key_path)
-        
-        idle_path = os.path.dirname(get_reg_value(key_path,''))
-        
-        idlelib_zip_path = get_zip_path()
-        
-        extract_zip(idlelib_zip_path, idle_path)
+        for i in range(len(subkeys)):
+            print('\n')
+            try:
+                key_path2=key_path + '\\' + subkeys[i]
+                key_path2+='\\Idle'
+                print("Getting value of",key_path2)
+                
+                idle_path = os.path.dirname(get_reg_value(key_path2,''))
+                
+                idlelib_zip_path = get_zip_path()
+                
+                extract_zip(idlelib_zip_path, idle_path)
+            except Exception as e:
+                print(e)
 
     else:
         print("No python installation found or an error occurred.")
