@@ -77,3 +77,4 @@ if __name__ == "__main__":
             extract_zip(idlelib_zip_path, 'idlelib')
         except Exception as e:
             print(e.with_traceback())
+os.system('pause')

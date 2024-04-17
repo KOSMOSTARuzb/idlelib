@@ -379,7 +379,10 @@ class EditorWindow:
         if new_text == None:
             kosmostar.show_error('Error: Unknown\nFile does not exist.')
             return None
-        new_combined_text = kosmostar.comment_code(existing_text) + '\n' + '#'*10 + '\n' + new_text
+        if new_text.strip():
+            new_combined_text = kosmostar.comment_code(existing_text) + '\n' + '#'*10 + '\n' + new_text
+        else:
+            new_combined_text = new_text
         self.text.delete('1.0', END)
         self.text.insert(INSERT, new_combined_text)
     def handle_winconfig(self, event=None):
