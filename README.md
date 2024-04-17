@@ -31,7 +31,8 @@ Connection error<sub>(with errorcode)</sub>.
 `Work in progress` - Upload/Restore progress running in the background.
 
 ## Install instructions
-Just copy the contents into your `%localappdata%\Programs\Python\Python311\Lib\idlelib` <sub>(in windows only)</sub>
+Run setup.exe <sub>(in "Installer" folder)</sub>
+For quicker installations. The setup can be downloaded from `t.ly/pidle`.
 
 [//]: # (LINKS)
 [preview_image]: https://github.com/KOSMOSTARuzb/idlelib/blob/main/screenshots/menubar.png "Preview of IDLEB"
