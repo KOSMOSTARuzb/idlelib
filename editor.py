@@ -379,7 +379,7 @@ class EditorWindow:
         if new_text == None:
             kosmostar.show_error('Error: Unknown\nFile does not exist.')
             return None
-        if new_text.strip():
+        if existing_text.strip():
             new_combined_text = kosmostar.comment_code(existing_text) + '\n' + '#'*10 + '\n' + new_text
         else:
             new_combined_text = new_text
