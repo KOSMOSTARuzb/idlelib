@@ -88,8 +88,12 @@ def get_connected(editr = None):
             change_editor_state(editr)
         return True
     except ConnectionRefusedError:
+        if not editr==None:
+            change_editor_state(editr)
         show_error("Unable to launch Python IDE.")
     except Exception as e:
+        if not editr==None:
+            change_editor_state(editr)
         show_error("Unable to launch Python IDE.\n\n"+str(e))
     is_connecting = False
     return False
