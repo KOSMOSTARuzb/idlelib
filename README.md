@@ -32,7 +32,7 @@ Connection error<sub>(with errorcode)</sub>.
 
 ## Install instructions
 Run setup.exe <sub>(in "Installer" folder)</sub>
-For quicker installations. The setup can be downloaded from `t.ly/pidle`.
+For quicker installations.
 
 [//]: # (LINKS)
 [preview_image]: https://github.com/KOSMOSTARuzb/idlelib/blob/main/screenshots/menubar.png "Preview of IDLEB"
